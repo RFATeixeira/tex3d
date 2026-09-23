@@ -25,7 +25,7 @@ const navigation = [
   { href: "/", label: "Meus projetos", icon: Squares2X2Icon },
   { href: "/historico", label: "Histórico", icon: ArrowsRightLeftIcon },
   { href: "/investimentos", label: "Investimentos", icon: WrenchScrewdriverIcon },
-  { href: "/calculadora", label: "Orçamento", icon: CalculatorIcon },
+  { href: "/orcamentos", label: "Orçamento", icon: CalculatorIcon },
   { href: "/filamentos", label: "Filamentos", icon: CircleStackIcon },
 ];
 export function Shell({ children }: { children: React.ReactNode }) {
