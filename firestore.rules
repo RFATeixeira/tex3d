@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function authorized() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && exists(/databases/$(database)/documents/allowedUsers/$(request.auth.token.email))
+        && get(/databases/$(database)/documents/allowedUsers/$(request.auth.token.email)).data.active == true;
+    }
+    match /allowedUsers/{email} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true && request.auth.token.email == email;
+      allow list, write: if false;
+    }
+    match /workspaces/{uid} {
+      allow read: if authorized() && request.auth.uid == uid;
+      allow create, update: if authorized() && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(['projects', 'transactions', 'settings'])
+        && request.resource.data.keys().hasOnly(['projects', 'transactions', 'settings', 'filaments'])
+        && (!('filaments' in request.resource.data)
+          || (request.resource.data.filaments is list
+            && request.resource.data.filaments.size() <= 500))
+        && request.resource.data.projects is list
+        && request.resource.data.projects.size() <= 500
+        && request.resource.data.transactions is list
+        && request.resource.data.transactions.size() <= 2000
+        && request.resource.data.settings is map;
+      allow delete: if false;
+      match /projectDetails/{projectId} {
+        allow read, delete: if authorized() && request.auth.uid == uid;
+        allow create, update: if authorized() && request.auth.uid == uid
+          && request.resource.data.keys().hasAll(['image', 'quotes'])
+          && request.resource.data.keys().hasOnly(['image', 'quotes', 'components'])
+          && request.resource.data.image is string && request.resource.data.image.size() <= 250000
+          && (request.resource.data.image == '' || request.resource.data.image.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+'))
+          && request.resource.data.quotes is list && request.resource.data.quotes.size() <= 100
+          && (!('components' in request.resource.data)
+            || (request.resource.data.components is list
+              && request.resource.data.components.size() <= 100));
+      }
+      match /quotes/{quoteId} {
+        allow read, delete: if authorized() && request.auth.uid == uid;
+        allow create, update: if authorized() && request.auth.uid == uid
+          && request.resource.data.keys().hasAll(['id', 'name', 'printType', 'image', 'createdAt', 'grams', 'hours', 'laborMinutes', 'extras', 'quantity', 'settings', 'filament', 'result'])
+          && request.resource.data.keys().hasOnly(['id', 'name', 'printType', 'materialType', 'image', 'createdAt', 'grams', 'hours', 'laborMinutes', 'extras', 'quantity', 'settings', 'filament', 'result'])
+          && request.resource.data.id == quoteId
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100
+          && request.resource.data.printType is string
+          && request.resource.data.printType.size() > 0 && request.resource.data.printType.size() <= 80
+          && (!('materialType' in request.resource.data)
+            || request.resource.data.materialType in ['PLA', 'PETG', 'ABS', 'ASA', 'TPU', 'Outro'])
+          && request.resource.data.image is string && request.resource.data.image.size() <= 250000
+          && (request.resource.data.image == '' || request.resource.data.image.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+'))
+          && request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 30
+          && request.resource.data.grams is number && request.resource.data.grams >= 0
+          && request.resource.data.hours is number && request.resource.data.hours >= 0
+          && request.resource.data.laborMinutes is number && request.resource.data.laborMinutes >= 0
+          && request.resource.data.extras is number && request.resource.data.extras >= 0
+          && request.resource.data.quantity is int && request.resource.data.quantity >= 1 && request.resource.data.quantity <= 100000
+          && request.resource.data.settings is map
+          && (request.resource.data.filament == null || request.resource.data.filament is map)
+          && request.resource.data.result is map;
+      }
+    }
+  }
+}
