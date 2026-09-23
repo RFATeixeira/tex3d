@@ -1,6 +1,6 @@
 # Acesso privado no Firebase
 
-Projeto: `tex3d-555de`. Conta inicial: `rfateixeirachannel@gmail.com`.
+Projeto: `<FIREBASE_PROJECT_ID>`. Conta inicial: `<EMAIL_AUTORIZADO>`.
 
 ## Configuracao sem Cloud Functions
 
@@ -9,11 +9,11 @@ O app usa Google Authentication e Firestore no plano Spark, sujeito aos limites 
 1. Habilite Google em Authentication e configure o e-mail de suporte.
 2. Autorize `localhost` e o dominio HTTPS de producao. Para o login local, use `http://localhost:3000`.
 3. Crie o Firestore padrao `(default)`.
-4. Crie `allowedUsers/rfateixeirachannel@gmail.com` com o campo `active` do tipo booleano igual a `true`.
+4. Crie `allowedUsers/<EMAIL_AUTORIZADO>` com o campo `active` do tipo booleano igual a `true`.
 5. Publique as regras com a conta administradora:
 
 ```powershell
-firebase deploy --only firestore:rules --project tex3d-555de --account texxlabz@gmail.com
+firebase deploy --only firestore:rules --project SEU_PROJECT_ID --account SUA_CONTA_ADMINISTRADORA
 ```
 
 Nao ha subcolecoes obrigatorias. O app cria `workspaces/{uid}` na primeira gravacao, com `projects`, `transactions` e `settings`.
